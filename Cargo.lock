@@ -2796,6 +2796,7 @@ dependencies = [
  "strum_macros 0.24.3",
  "sui-macros",
  "sui-protocol-config",
+ "sui-simulator",
  "sui-tls",
  "tap",
  "telemetry-subscribers",
