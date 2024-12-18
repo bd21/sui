@@ -659,7 +659,6 @@ impl SuiNode {
 
         info!("start snapshot upload");
         // Start uploading state snapshot to remote store
-        // TODO (wlmyng): see if we can feed authority here
         let state_snapshot_handle = Self::start_state_snapshot(
             &config,
             &prometheus_registry,
