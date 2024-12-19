@@ -74,9 +74,15 @@ impl IngestionClient {
         }
     }
 
-    pub(crate) fn new_rpc(url: Url, metrics: Arc<IndexerMetrics>) -> IngestionResult<Self> {
-        let client =
-            Arc::new(RpcIngestionClient::new(url).map_err(|e| IngestionError::RpcClientError(e))?);
+    pub(crate) fn new_rpc(
+        url: Url,
+        basic_auth: Option<(String, String)>,
+        metrics: Arc<IndexerMetrics>,
+    ) -> IngestionResult<Self> {
+        let client = Arc::new(
+            RpcIngestionClient::new(url, basic_auth)
+                .map_err(|e| IngestionError::RpcClientError(e))?,
+        );
         let latest_ingested_checkpoint = Arc::new(AtomicU64::new(0));
         Ok(IngestionClient {
             client,

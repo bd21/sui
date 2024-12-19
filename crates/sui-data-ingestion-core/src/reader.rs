@@ -71,8 +71,8 @@ impl Default for ReaderOptions {
 
 enum RemoteStore {
     ObjectStore(Box<dyn ObjectStore>),
-    Rest(sui_rpc_api::Client),
-    Hybrid(Box<dyn ObjectStore>, sui_rpc_api::Client),
+    Rest(Client),
+    Hybrid(Box<dyn ObjectStore>, Client),
 }
 
 impl CheckpointReader {
@@ -189,7 +189,7 @@ impl CheckpointReader {
             .expect("failed to create remote store client");
             RemoteStore::Hybrid(object_store, sui_rpc_api::Client::new(fn_url).unwrap())
         } else if url.ends_with("/rest") {
-            RemoteStore::Rest(sui_rpc_api::Client::new(url).unwrap())
+            RemoteStore::Rest(Client::new(url).unwrap())
         } else {
             let object_store = create_remote_store_client(
                 url,

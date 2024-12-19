@@ -13,10 +13,15 @@ pub(crate) struct RpcIngestionClient {
 }
 
 impl RpcIngestionClient {
-    pub(crate) fn new(url: Url) -> Result<Self, anyhow::Error> {
-        Ok(Self {
-            client: Client::new(url.to_string())?,
-        })
+    pub(crate) fn new(
+        url: Url,
+        basic_auth: Option<(String, String)>,
+    ) -> Result<Self, anyhow::Error> {
+        let mut client = Client::new(url.to_string())?;
+        if let Some(basic_auth) = basic_auth {
+            client = client.with_basic_auth(basic_auth)?;
+        }
+        Ok(Self { client })
     }
 }
 
