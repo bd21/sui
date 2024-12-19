@@ -6,7 +6,8 @@ use std::{collections::BTreeMap, sync::Arc};
 use anyhow::{Context, Result};
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
-use sui_indexer_alt_framework::pipeline::{concurrent::Handler, Processor, PrunableRange};
+use sui_indexer_alt_framework::handlers::cp_sequence_numbers::PrunableRange;
+use sui_indexer_alt_framework::pipeline::{concurrent::Handler, Processor};
 use sui_indexer_alt_schema::{
     schema::tx_balance_changes,
     transactions::{BalanceChange, StoredTxBalanceChange},
@@ -67,10 +68,12 @@ impl Handler for TxBalanceChanges {
             .await?)
     }
 
-    async fn prune(range: PrunableRange, conn: &mut db::Connection<'_>) -> Result<usize> {
-        let (from, to) = range.tx_interval();
-        let filter = tx_balance_changes::table
-            .filter(tx_balance_changes::tx_sequence_number.between(from as i64, to as i64 - 1));
+    async fn prune(from: u64, to: u64, conn: &mut db::Connection<'_>) -> Result<usize> {
+        let range_mapping = PrunableRange::get_range(conn, from, to).await?;
+        let (from_tx, to_tx) = range_mapping.tx_interval();
+        let filter = tx_balance_changes::table.filter(
+            tx_balance_changes::tx_sequence_number.between(from_tx as i64, to_tx as i64 - 1),
+        );
 
         Ok(diesel::delete(filter).execute(conn).await?)
     }
